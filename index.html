@@ -38,7 +38,7 @@
                         id="avatar-dz"></form>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="profile-modal-close">Close</button>
                 <button type="button" class="btn btn-primary" id="profile-modal-save">Save changes</button>
               </div>
             </div><!-- /.modal-content -->
@@ -96,7 +96,7 @@
     <script>
         var socket = io();
         var avatarUrl = "http://placehold.it/100/bbb/333&text=User";
-        var me = {avatarUrl: avatarUrl};
+        var me = {avatarUrl: avatarUrl, name: null};
         var data = {};
         var my_room = null;
         var snd = new Audio("static/blip.mp3");
@@ -242,12 +242,16 @@
         });
 
         $('#profile-modal-save').click(function() {
-            me.name = $('#inputUsername').val();
-            socket.emit('username', me.name, function(data) {
+            var username = $('#inputUsername').val();
+            socket.emit('username', username, function(data) {
                 if(data.status === 0) {
+                    me.name = data.username;
                     $('#divUsername').removeClass('has-error');
                     $('#usernameErrorIcon').remove();
                     $('#profile-modal').modal('hide');
+                    $('#profile-modal-close').show();
+                    $('#profile-modal').data('bs.modal').options.keyboard = true;
+                    $('#profile-modal').data('bs.modal').options.backdrop = true;
                     if(my_room == null) {
                         to_room(0);
                     }
@@ -319,8 +323,13 @@
         // socket.on('user disconnected', function(msg){
         //     $('#messages').append($('<li>').addClass('clearfix text-center').text(msg + " disconnected"));
         // });
-
+        $('#profile-modal').modal({
+          backdrop: 'static',
+          keyboard: false
+        });
+        $('#profile-modal-close').hide();
         $('#profile-modal').modal('show');
+
 
     </script>
 </html>

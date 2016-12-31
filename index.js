@@ -78,7 +78,7 @@ io.on('connection', function(socket){
     for(var i = 0; i < users.length; i++) {
       if(users[i].username === username) {
         if(users[i].id === socket.id) {
-          cb({status: 0, message: 'Success'});
+          cb({status: 0, message: 'Success', username: username});
           return;
         }
         else {
@@ -98,7 +98,7 @@ io.on('connection', function(socket){
     else {
       users[user_idx].username = username;
     }
-    cb({status: 0, message: 'Success'});
+    cb({status: 0, message: 'Success', username: username});
   });
 });
 
