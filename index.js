@@ -19,7 +19,6 @@ app.post('/upload', upload.single( 'file' ), function (req, res, next) {
   return res.status( 200 ).send( req.file );
 })
 
-var user_id = 0;
 var room_id = 3;
 
 var rooms = [ {name: 'Main', id: 0, messages: []}, 
@@ -31,8 +30,6 @@ var users = [];
 
 io.on('connection', function(socket){
   //var username = 'user'+Math.random().toString().slice(2,7);
-  user_id += 1;
-  socket.emit("rooms", rooms);
   //socket.broadcast.emit('user connected', user);
 
   socket.on('disconnect', function(){
@@ -77,16 +74,30 @@ io.on('connection', function(socket){
       cb({status: 1, message: 'Failure'});
       return;
     }
-
+    var user_idx = null;
     for(var i = 0; i < users.length; i++) {
-      if(users[i].username === username && users[i].id !== socket.id) {
-        cb({status: 1, message: 'Failure'});
-        return;
+      if(users[i].username === username) {
+        if(users[i].id === socket.id) {
+          cb({status: 0, message: 'Success'});
+          return;
+        }
+        else {
+          cb({status: 1, message: 'Failure'});
+          return;
+        }
+      }
+      if(users[i].id === socket.id) {
+        user_idx = i;
       }
     }
-
     // Valid username, save and approve
-    users.push({username: username, id: socket.id});
+    if(user_idx === null) {
+      users.push({username: username, id: socket.id});
+      socket.emit("rooms", rooms);
+    }
+    else {
+      users[user_idx].username = username;
+    }
     cb({status: 0, message: 'Success'});
   });
 });
