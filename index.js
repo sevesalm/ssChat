@@ -15,7 +15,6 @@ app.post('/upload', upload.single( 'file' ), function (req, res, next) {
   console.log("Upload...");
   console.log(req.body.user_id);
 
-
   //res.send('POST request to /upload');
   return res.status( 200 ).send( req.file );
 })
@@ -28,9 +27,10 @@ var rooms = [ {name: 'Main', id: 0, messages: []},
               {name: 'Religion', id: 2, messages: []} 
 ];
 
+var users = [];
+
 io.on('connection', function(socket){
   //var username = 'user'+Math.random().toString().slice(2,7);
-  socket.emit("user_id", user_id);
   user_id += 1;
   socket.emit("rooms", rooms);
   //socket.broadcast.emit('user connected', user);
@@ -42,7 +42,7 @@ io.on('connection', function(socket){
   socket.on('chat message', function(msg){
     var room;
     rooms.forEach(function(item) {
-      if(item.id == msg.room) {
+      if(item.id === msg.room) {
         room = item;
       }
     });
@@ -64,7 +64,25 @@ io.on('connection', function(socket){
     rooms.push({name: roomname, id: room_id, messages: []});
     room_id += 1;
     io.emit("rooms", rooms);
-  })
+  });
+
+  socket.on('username', function(username, cb) {
+    if(username === '') {
+      cb({status: 1, message: 'Failure'});
+      return;
+    }
+
+    for(var i = 0; i < users.length; i++) {
+      if(users[i].username === username && users[i].id !== socket.id) {
+        cb({status: 1, message: 'Failure'});
+        return;
+      }
+    }
+
+    // Valid username, save and approve
+    users.push({username: username, id: socket.id});
+    cb({status: 0, message: 'Success'});
+  });
 });
 
 http.listen(3000, '0.0.0.0', function(){

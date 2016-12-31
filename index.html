@@ -26,11 +26,10 @@
           <div class="modal-dialog modal-sm" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title text-center">Options</h4>
               </div>
               <div class="modal-body">
-                  <div class="form-group">
+                  <div class="form-group has-feedback" id="divUsername">
                     <label for="inputUsername">Username</label>
                     <input type="text" class="form-control" id="inputUsername" placeholder="Username">
                   </div>
@@ -40,7 +39,7 @@
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="modal-save">Save changes</button>
+                <button type="button" class="btn btn-primary" id="profile-modal-save">Save changes</button>
               </div>
             </div><!-- /.modal-content -->
           </div><!-- /.modal-dialog -->
@@ -96,11 +95,11 @@
 
     <script>
         var socket = io();
-        var me = {};
+        var avatarUrl = "http://placehold.it/100/bbb/333&text=User";
+        var me = {avatarUrl: avatarUrl};
         var data = {};
         var my_room = null;
         var snd = new Audio("static/blip.mp3");
-        var avatarUrl = "http://placehold.it/100/bbb/333&text=User";
 
         function display_message(msg) {
             var $img = $('<img>').addClass('img-responsive').attr('alt', 'User Avatar').attr('src', msg.user.avatarUrl);
@@ -198,7 +197,7 @@
                     me.avatarUrl = res.path;
                 });
                 this.on('sending', function(file, xhr, formData){
-                    formData.append('user_id', me.user_id);
+                    formData.append('user_id', socket.id);
                 });
             }
         }
@@ -242,12 +241,27 @@
             $('#newRoomModal').modal('hide');
         });
 
-        $('#modal-save').click(function() {
+        $('#profile-modal-save').click(function() {
             me.name = $('#inputUsername').val();
-            $('#profile-modal').modal('hide');
-            if(my_room == null) {
-                to_room(0);
-            }
+            socket.emit('username', me.name, function(data) {
+                if(data.status === 0) {
+                    $('#divUsername').removeClass('has-error');
+                    $('#usernameErrorIcon').remove();
+                    $('#profile-modal').modal('hide');
+                    if(my_room == null) {
+                        to_room(0);
+                    }
+                }
+                else {
+                    if(!$('#divUsername').hasClass('has-error')) {
+                        $('#divUsername').addClass('has-error');
+                        var $errorIcon = $('<span>').addClass('glyphicon glyphicon-remove form-control-feedback').attr('aria-hidden', 'true').attr('id', 'usernameErrorIcon');
+                        $('#inputUsername').after($errorIcon);
+                    }
+
+                }
+            });
+
         });
 
         $('#profile-modal').on('show.bs.modal', function() {
@@ -295,11 +309,6 @@
                 $('#messages').append($('<li>').addClass('clearfix text-center').text(user.name + " joined"));
                 $('.msg-container').animate({scrollTop: $('.msg-container').prop("scrollHeight")}, 500);
             }
-        });
-
-        socket.on('user_id', function(id) {
-            me.user_id = id;
-            me.avatarUrl = avatarUrl;
         });
 
         // socket.on('user connected', function(msg){
