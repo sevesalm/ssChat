@@ -1,0 +1,120 @@
+html {
+    width: 100%;
+    height: 100%;
+}
+body {
+    width: 100%;
+    height: 100%;
+}
+
+.panel {
+	margin-bottom: 0px !important;
+}
+
+.panel-body {
+	&.pbody {
+		padding: 0;
+	}
+
+	.msg-container {
+		overflow-y: scroll;
+		max-height: 100%;
+	}
+	.rooms {
+		padding: 0;
+		border-right: 1px solid #ccc;
+		height: 100%;
+
+		.newRoomBtn {
+			position: absolute;
+    		bottom: 0;
+		}
+
+		ul {
+			overflow-y: scroll;
+			list-style-type: none; 
+			margin: 0; 
+			padding: 0 0 40px 0;
+			height: 100%;
+			.badge {
+				background: #f77;
+				animation-duration: 0.1s;
+				margin: 10px;
+			}
+
+			li {
+				padding: 10px;
+				cursor: pointer;
+				&:hover {
+					background: #eee; 
+				}
+				&.active {
+					background: #ddd;
+				}
+				span {
+					margin: 20px;
+				}
+			}
+
+		}
+	}
+}
+
+.panel-heading {
+	#menubtn {
+		cursor: pointer;
+		&:hover {
+			transition: transform 0.3s;
+			transform: scale(1.4);
+		}
+	}
+}
+
+.panel-footer {
+	#chat-input{
+		resize: none;
+	}
+}
+
+#messages { 
+	list-style-type: none; 
+	margin: 0; 
+	padding: 0;
+
+	li {
+		animation: fadein 0.3s;
+		@keyframes fadein {
+		    from { opacity: 0; }
+		    to   { opacity: 1; }
+		}
+
+		margin: 10px 0;
+		padding-bottom: 10px;
+		border-bottom: 1px dotted #B3A9A9;
+
+		.chat-img {
+			margin: 10px 0;
+			img {
+				border-radius: 10px;
+				width: 60px;
+			}
+		}
+
+		.msg-content {
+			margin-left: 70px;
+			h2 {
+				font-size: 1.2em;
+				margin-top: 0.5em;
+				margin-bottom: 0.5em;
+			}
+
+			p{
+				margin-right: 80px;
+				text-align: justify;
+			}
+			.msg-time {
+				color: #aaaaaa;
+			}
+		}
+	}
+}

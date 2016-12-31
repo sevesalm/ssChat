@@ -1,0 +1,313 @@
+<!doctype html>
+<html>
+    <head>
+        <title>ssChat</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link type="text/css" rel="stylesheet" href="static/style.css" />
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/4.3.0/min/dropzone.min.css">
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.16.0/moment.min.js" type="text/javascript"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/4.3.0/min/dropzone.min.js" type="text/javascript"></script>
+    </head>
+
+    <body>
+        <div class="modal fade" id="profile-modal" tabindex="-1" role="dialog">
+          <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title text-center">Options</h4>
+              </div>
+              <div class="modal-body">
+                  <div class="form-group">
+                    <label for="inputUsername">Username</label>
+                    <input type="text" class="form-control" id="inputUsername" placeholder="Username">
+                  </div>
+                  <form action="/file-upload"
+                        class="dropzone"
+                        id="avatar-dz"></form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="modal-save">Save changes</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->        
+        <div class="modal fade" id="newRoomModal" tabindex="-1" role="dialog">
+          <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title text-center">New room</h4>
+              </div>
+              <div class="modal-body">
+                  <div class="form-group">
+                    <label for="inputRoomname">Room name</label>
+                    <input type="text" class="form-control" id="inputRoomname" placeholder="Name...">
+                  </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="room-save">Create</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div class="container">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-1 pull-left">myChat</div>
+                        <div class="col-xs-4 col-xs-offset-3"><select id="room-select" class="room-input form-control visible-xs-block"></select></div>
+                        <div class="col-xs-1 col-xs-offset-2 glyphicon glyphicon-menu-hamburger pull-right" id="menubtn" data-toggle="modal" data-target="#profile-modal"></div>
+                    </div>
+                </div>
+                <div class="panel-body pbody">
+                    <div class="col-sm-3 rooms hidden-xs">
+                        <ul id="rooms">
+                        </ul>
+                        <button class='btn btn-default btn-block newRoomBtn' data-toggle="modal" data-target="#newRoomModal">New room...</button>
+                    </div>
+                    <div class="col-sm-9 msg-container">
+                        <ul id="messages">
+                        </ul>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <textarea class="form-control" rows="3" id="chat-input"></textarea>
+                    <button class="btn btn-warning btn-md btn-block" id="btn-chat">Send</button>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    <script>
+        var socket = io();
+        var me = {};
+        var data = {};
+        var my_room = null;
+        var snd = new Audio("static/blip.mp3");
+        var avatarUrl = "http://placehold.it/100/bbb/333&text=User";
+
+        function display_message(msg) {
+            var $img = $('<img>').addClass('img-responsive').attr('alt', 'User Avatar').attr('src', msg.user.avatarUrl);
+            var $span = $('<span>').addClass('chat-img').addClass('pull-left').append($img);
+            var $div = $("<div>").addClass('msg-content');
+            var $time = $("<span>").addClass("pull-right msg-time").text(moment(msg.time).format('HH:mm:ss'));
+            var $header = $("<h2>").text(msg.user.name);
+            var $p = $("<p>").text(msg.message);
+            $('#messages').append($('<li>').addClass('clearfix').append($span).append($div.append($time).append($header).append($p)));
+        }
+
+        function scroll_to_bottom() {
+            $('.msg-container').animate({scrollTop: $('.msg-container').prop("scrollHeight")}, 500);
+        }
+
+        function save_message(msg, scroll) {
+            data[msg.room]['messages'].push(msg);
+            if(msg.room == my_room) {
+                display_message(msg);
+                if(scroll) {
+                    scroll_to_bottom();
+                }
+            }
+            else {
+                data[msg.room]['unread'] += 1;
+                set_unread(msg.room, data[msg.room]['unread']);
+            }
+        }
+
+        function set_unread(room, count) {
+            var $badge = get_room_by_id(room).prev();
+            $($badge).text(count);
+            $($badge).filter(':hidden').show().addClass('animated zoomIn');
+        }
+
+        function clear_unread(room) {
+            var $badge = get_room_by_id(room).prev();
+            $($badge).hide();
+        }
+
+        function resize_body() {
+            if($(window).width()<768) {
+                $("#chat-input").attr('rows', 2);
+                $("#btn-chat").removeClass('btn-lg');
+                $("#btn-chat").addClass('btn-md');
+            }
+            else {
+                $("#chat-input").attr('rows', 3);
+                $("#btn-chat").removeClass('btn-md');
+                $("#btn-chat").addClass('btn-lg');
+            }
+
+            $('.panel-body').height($(window).height()-$('.panel-heading').height()-$('.panel-footer').height()-45);
+        }
+
+        function get_room_by_id(id) {
+            return $('#rooms li[data-roomid="' + id + '"]');
+        }
+
+        function get_room_name(id) {
+            return data[id].name;
+        }
+
+        function to_room(room_id) {
+            get_room_by_id(my_room).removeClass('active');
+            my_room = room_id;
+            get_room_by_id(room_id).addClass('active');
+            $("#room-select").val(get_room_name(room_id));
+
+            clear_unread(room_id);
+
+            $('#messages').empty();
+            data[my_room]['messages'].forEach(function (item) {
+                display_message(item);
+            });
+            $('.msg-container').animate({scrollTop: $('.msg-container').prop("scrollHeight")}, 500);  
+            socket.emit('join room', me, room_id);
+            $('#chat-input').focus();
+        }
+
+        function create_room(roomname) {
+            socket.emit('create room', roomname);
+        }
+
+        resize_body();
+
+        Dropzone.options.avatarDz = {
+            url:                '/upload',
+            maxFiles:           1,
+            dictDefaultMessage: "Upload avatar image",
+            autoProcessQueue:   true,
+            acceptedFiles:      "image/*",
+            init:               function() {
+                this.on("success", function(file, res) {
+                    me.avatarUrl = res.path;
+                });
+                this.on('sending', function(file, xhr, formData){
+                    formData.append('user_id', me.user_id);
+                });
+            }
+        }
+
+        $(window).resize(function() {
+            resize_body();
+        });
+
+        $('#profile-modal').modal('show');
+
+        $('.rooms').on('click', 'li', function() {
+            var room_id = $(this).attr('data-roomid');
+            to_room(room_id);
+        });
+
+        $('#room-select').change(function(){
+            var room_id = $("option:selected", this).attr('data-roomid');
+            to_room(room_id);
+        });
+
+        // Send message
+        $('#btn-chat').click(function(){
+            var str = $('#chat-input').val();
+            if(str==="")
+                return false;
+            var message = {
+                user:       me,
+                message:    str,
+                room:       my_room,
+                time:       moment()
+            }
+            socket.emit('chat message', message );
+            save_message(message, true);
+            $('#chat-input').val('').focus();
+            return false;
+        });
+
+        $('#room-save').click(function() {
+            create_room($('#inputRoomname').val());
+            $('#inputRoomname').val('');
+            $('#newRoomModal').modal('hide');
+        });
+
+        $('#modal-save').click(function() {
+            me.name = $('#inputUsername').val();
+            $('#profile-modal').modal('hide');
+            if(my_room == null) {
+                to_room(0);
+            }
+        });
+
+        $('#profile-modal').on('show.bs.modal', function() {
+            $('#inputUsername').val(me.name);
+        });
+
+        $('#newRoomModal').on('shown.bs.modal', function () {
+          $('#inputRoomname').focus();
+        })
+
+        socket.on('rooms', function(rooms){
+            rooms.forEach(function(room) {
+                if(!(room.id in data)) {
+                    var $span = $('<span>').text(room.name);
+                    $('#rooms').append($('<span>').addClass('badge pull-right').hide());
+                    $('#rooms').append($('<li>').addClass('roomName').attr('data-roomid', room.id).append($span));
+                    var $option = $('<option>').attr('data-roomid', room.id).text(room.name);
+                    $('#room-select').append($option);
+                    var new_room = {
+                        messages: [],
+                        unread: 0,
+                        name: room.name
+                    }
+                    data[room.id] = new_room;
+                    room.messages.forEach(function(msg) {
+                        save_message(msg, false);
+                    });
+                }
+            });
+        });
+
+        socket.on('chat message', function(msg){
+            save_message(msg, true);
+            snd.play();
+        });
+
+        // socket.on('username', function(msg){
+        //     my_username = msg;
+        //     //$('#label').text(msg);
+        //     $('#inputUsername').val(my_username);
+        // });
+
+        socket.on('join room', function(user, room) {
+            if(my_room === room) {
+                $('#messages').append($('<li>').addClass('clearfix text-center').text(user.name + " joined"));
+                $('.msg-container').animate({scrollTop: $('.msg-container').prop("scrollHeight")}, 500);
+            }
+        });
+
+        socket.on('user_id', function(id) {
+            me.user_id = id;
+            me.avatarUrl = avatarUrl;
+        });
+
+        // socket.on('user connected', function(msg){
+        //     $('#messages').append($('<li>').addClass('clearfix text-center').text(msg + " connected"));
+        // });
+
+        // socket.on('user disconnected', function(msg){
+        //     $('#messages').append($('<li>').addClass('clearfix text-center').text(msg + " disconnected"));
+        // });
+    </script>
+</html>
