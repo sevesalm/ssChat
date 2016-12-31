@@ -189,6 +189,7 @@
         Dropzone.options.avatarDz = {
             url:                '/upload',
             maxFiles:           1,
+            maxFilesize:        0.2,
             dictDefaultMessage: "Upload avatar image",
             autoProcessQueue:   true,
             acceptedFiles:      "image/*",
@@ -206,7 +207,6 @@
             resize_body();
         });
 
-        $('#profile-modal').modal('show');
 
         $('.rooms').on('click', 'li', function() {
             var room_id = $(this).attr('data-roomid');
@@ -264,8 +264,9 @@
 
         });
 
-        $('#profile-modal').on('show.bs.modal', function() {
+        $('#profile-modal').on('shown.bs.modal', function() {
             $('#inputUsername').val(me.name);
+            $('#inputUsername').focus();
         });
 
         $('#newRoomModal').on('shown.bs.modal', function () {
@@ -318,5 +319,8 @@
         // socket.on('user disconnected', function(msg){
         //     $('#messages').append($('<li>').addClass('clearfix text-center').text(msg + " disconnected"));
         // });
+
+        $('#profile-modal').modal('show');
+
     </script>
 </html>

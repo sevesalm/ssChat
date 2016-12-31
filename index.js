@@ -35,9 +35,15 @@ io.on('connection', function(socket){
   socket.emit("rooms", rooms);
   //socket.broadcast.emit('user connected', user);
 
-  /*socket.on('disconnect', function(){
-    io.emit('user disconnected', user);
-  });*/
+  socket.on('disconnect', function(){
+    for (var i = 0; i<users.length;i++) {
+      if(users[i].id === socket.id) {
+        users.splice(i,1);
+        break;
+      }
+    }
+    //io.emit('user disconnected', user);
+  });
 
   socket.on('chat message', function(msg){
     var room;
