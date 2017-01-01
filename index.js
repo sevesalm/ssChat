@@ -18,8 +18,6 @@ app.post('/upload', function (req, res) {
       console.log(err);
       return;
     }
-    console.log("Uploading...");
-    console.log(req.body.user_id);
 
     //res.send('POST request to /upload');
     return res.status( 200 ).send( req.file );

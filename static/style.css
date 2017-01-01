@@ -6,6 +6,21 @@ body {
   width: 100%;
   height: 100%; }
 
+.dropzone {
+  padding: 0px !important;
+  margin: 0px;
+  text-align: center;
+  border: 0px !important; }
+  .dropzone .dz-details {
+    display: none; }
+  .dropzone .dz-preview:hover .dz-image img {
+    -webkit-filter: none !important;
+    filter: none !important; }
+  .dropzone .dz-preview .dz-image {
+    border-radius: 5px !important;
+    width: 180px !important;
+    height: auto !important; }
+
 .panel {
   margin-bottom: 0px !important; }
 

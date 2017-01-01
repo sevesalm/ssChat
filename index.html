@@ -4,7 +4,7 @@
         <title>ssChat</title>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
         <link type="text/css" rel="stylesheet" href="static/style.css" />
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -33,9 +33,8 @@
                     <label for="inputUsername">Username</label>
                     <input type="text" class="form-control" id="inputUsername" placeholder="Username" autocomplete="off">
                   </div>
-                  <form action="/file-upload"
-                        class="dropzone"
-                        id="avatar-dz"></form>
+                  <form action="/file-upload" class="dropzone" id="avatar-dz"></form>
+                  <button type="button" class="btn btn-success center-block" id="new_btn">Upload avatar...</button>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal" id="profile-modal-close">Close</button>
@@ -188,17 +187,45 @@
 
         Dropzone.options.avatarDz = {
             url:                '/upload',
-            maxFiles:           1,
-            maxFilesize:        0.2,
+            maxFilesize:        2,
             dictDefaultMessage: "Upload avatar image",
             autoProcessQueue:   true,
             acceptedFiles:      "image/*",
+            clickable:          "#new_btn, .dropzone",
+            thumbnailWidth:      180,
+            thumbnailHeight:     null,
+            accept:             function(file, done) {
+                var DZ = Dropzone.forElement("#avatar-dz");
+                var files = DZ.getAcceptedFiles();
+                if(files[0]) {
+                    DZ.removeFile(files[0]);
+                }
+                done();
+            },
+            resize: function(file) {
+                    var DZ = Dropzone.forElement("#avatar-dz");
+                    var info = {
+                        srcX:0,
+                        srcY:0,
+                        srcWidth: file.width,
+                        srcHeight: file.height,
+                        trgX:0,
+                        trgY:0,
+                        trgWidth: DZ.options.thumbnailWidth,
+                        trgHeight: parseInt(DZ.options.thumbnailWidth * file.height / file.width)
+                    }
+                    return info;
+                },
             init:               function() {
                 this.on("success", function(file, res) {
                     me.avatarUrl = res.path;
+                    $('.dz-image img').addClass('img-responsive');
                 });
                 this.on('sending', function(file, xhr, formData){
                     formData.append('user_id', socket.id);
+                });
+                this.on('thumbnail', function(file, res){
+                    $('.dz-image').height(75);
                 });
             }
         }
