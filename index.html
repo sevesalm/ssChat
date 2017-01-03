@@ -250,6 +250,27 @@
             to_room(room_id);
         });
 
+        $('#chat-input').keypress(function(e) {
+            if(e.which == 13 && !e.shiftKey) {
+                e.preventDefault();
+                $('#btn-chat').click();
+            }
+        });
+
+        $('#inputUsername').keypress(function(e) {
+            if(e.which == 13) {
+                e.preventDefault();
+                $('#profile-modal-save').click();
+            }
+        });
+
+        $('#inputRoomname').keypress(function(e) {
+            if(e.which == 13) {
+                e.preventDefault();
+                $('#room-save').click();
+            }
+        });
+
         // Send message
         $('#btn-chat').click(function(){
             var str = $('#chat-input').val();
