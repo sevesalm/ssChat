@@ -269,6 +269,7 @@
             var txtToAdd = String.fromCharCode(H,L);
             $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
             $txt[0].selectionStart = caretPos + txtToAdd.length;
+            $('#chat-input').focus();
         });
 
         $('#inputUsername').keypress(function(e) {
