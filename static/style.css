@@ -55,6 +55,8 @@ body {
         background: #ddd; }
       .panel-body .rooms ul li span {
         margin: 20px; }
+      .panel-body .rooms ul li .private {
+        font-style: italic; }
 
 .panel-heading #menubtn {
   cursor: pointer; }
@@ -86,10 +88,12 @@ body {
         width: 60px; }
     #messages li .msg-content {
       margin-left: 70px; }
-      #messages li .msg-content h2 {
+      #messages li .msg-content .username {
         font-size: 1.2em;
         margin-top: 0.5em;
         margin-bottom: 0.5em; }
+        #messages li .msg-content .username:hover {
+          cursor: pointer; }
       #messages li .msg-content p {
         margin-right: 80px;
         text-align: justify; }

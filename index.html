@@ -68,7 +68,7 @@
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <div class="row">
-                        <div class="col-xs-1 pull-left">myChat</div>
+                        <div class="col-xs-1 pull-left">ssChat</div>
                         <div class="col-xs-4 col-xs-offset-3"><select id="room-select" class="room-input form-control visible-xs-block"></select></div>
                         <div class="col-xs-1 col-xs-offset-2 glyphicon glyphicon-menu-hamburger pull-right" id="menubtn" data-toggle="modal" data-target="#profile-modal"></div>
                     </div>
@@ -105,7 +105,7 @@
             var $span = $('<span>').addClass('chat-img').addClass('pull-left').append($img);
             var $div = $("<div>").addClass('msg-content');
             var $time = $("<span>").addClass("pull-right msg-time").text(moment(msg.time).format('HH:mm:ss'));
-            var $header = $("<h2>").text(msg.user.name);
+            var $header = $("<h2>").addClass("username").text(msg.user.name);
             var $p = $("<p>").text(msg.message);
             $('#messages').append($('<li>').addClass('clearfix').append($span).append($div.append($time).append($header).append($p)));
         }
@@ -234,6 +234,11 @@
             resize_body();
         });
 
+        $('#messages').on('click', '.username', function() {
+            var buddy = $(this).text();
+            socket.emit('create private', buddy);
+        })
+
 
         $('.rooms').on('click', 'li', function() {
             var room_id = $(this).attr('data-roomid');
@@ -323,6 +328,25 @@
                     });
                 }
             });
+        });
+
+        socket.on('private', function(room) {
+            console.log("Received private");
+            if(!(room.id in data)) {
+                console.log("Creating private");
+                var $span = $('<span>').text(room.name).addClass('private');
+                $('#rooms').append($('<span>').addClass('badge pull-right').hide());
+                $('#rooms').append($('<li>').addClass('roomName').attr('data-roomid', room.id).append($span));
+                var $option = $('<option>').attr('data-roomid', room.id).text(room.name);
+                $('#room-select').append($option);
+                var new_room = {
+                    messages: [],
+                    unread: 0,
+                    name: room.name
+                }
+                data[room.id] = new_room;
+            }
+
         });
 
         socket.on('chat message', function(msg){

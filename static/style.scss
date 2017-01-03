@@ -74,6 +74,9 @@ body {
 				span {
 					margin: 20px;
 				}
+				.private {
+					font-style: italic;
+				}
 			}
 
 		}
@@ -122,10 +125,13 @@ body {
 
 		.msg-content {
 			margin-left: 70px;
-			h2 {
+			.username {
 				font-size: 1.2em;
 				margin-top: 0.5em;
 				margin-bottom: 0.5em;
+				&:hover {
+					cursor: pointer;
+				}
 			}
 
 			p{

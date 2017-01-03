@@ -31,7 +31,46 @@ var rooms = [ {name: 'Main', id: 0, messages: []},
               {name: 'Religion', id: 2, messages: []} 
 ];
 
+var private_rooms = [];
+
 var users = [];
+
+function get_user_id(username) {
+  for(var i = 0; i < users.length; i++) {
+    if(users[i].username === username) {
+      return users[i].id;
+    }
+  }
+  return null;
+}
+
+function get_username(id) {
+  for(var i = 0; i < users.length; i++) {
+    if(users[i].id === id) {
+      return users[i].username;
+    }
+  }
+  return null;
+}
+
+function create_private(socket1, socket2) {
+  if(socket1 === socket2) 
+    return null;
+  if(socket1 === null || socket2 === null) 
+    return null;
+
+  if(socket1 > socket2) {
+    var temp = socket2;
+    socket2 = socket1;
+    socket1 = temp;
+  }
+  for(var i = 0; i<private_rooms.length; i++) {
+    if(private_rooms[i].users[0] == socket1 && private_rooms[i].users[1] ===socket2) {
+      return null;
+    }
+  }
+  return [socket1, socket2];
+}
 
 io.on('connection', function(socket){
   //var username = 'user'+Math.random().toString().slice(2,7);
@@ -52,16 +91,30 @@ io.on('connection', function(socket){
     rooms.forEach(function(item) {
       if(item.id === msg.room) {
         room = item;
+        // Push the message, store at most N newest
+        room.messages.push(msg);
+        if(room.messages.length > 100) {
+          room.messages.shift();
+        }
+        socket.broadcast.emit('chat message', msg);
       }
     });
 
-    // Push the message, store at most N newest
-    room.messages.push(msg);
-    if(room.messages.length > 100) {
-      room.messages.shift();
+    for(var i = 0; i<private_rooms.length; i++) {
+      if(private_rooms[i].id == msg.room) {
+        var room = private_rooms[i];
+        var buddy = null;
+        if(socket.id === room.users[0]) {
+          buddy = room.users[1];
+        }
+        else if(socket.id === room.users[1]) {
+          buddy = room.users[0];
+        }
+        if(buddy) {
+          io.sockets.connected[buddy].emit('chat message', msg);
+        }
+      }
     }
-
-    socket.broadcast.emit('chat message', msg);
   });
 
   socket.on('join room', function(user, room) {
@@ -72,6 +125,18 @@ io.on('connection', function(socket){
     rooms.push({name: roomname, id: room_id, messages: []});
     room_id += 1;
     io.emit("rooms", rooms);
+  });
+
+  socket.on('create private', function(username) {
+    var buddy_id = get_user_id(username);
+    var users = create_private(socket.id, buddy_id);
+    if(users !== null) {
+      var room = {id: room_id, users: users};
+      private_rooms.push(room);
+      io.sockets.connected[buddy_id].emit("private", {id: room_id, name: get_username(socket.id), messages: []});
+      socket.emit("private", {id: room_id, name: username});
+      room_id += 1;
+    }
   });
 
   socket.on('username', function(username, cb) {
