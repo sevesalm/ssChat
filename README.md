@@ -9,6 +9,13 @@ ssChat is a simple chat browser program running on Node.js. ssChat uses socket.i
 3. Start the server: `node index.js`
 4. Chat!
 
+## Features
+
+- Users can join rooms and send messages
+- Public room creation
+- Private channels (click username to initiale)
+- Upload avatar images
+
 ## Technologies
 
 The backend uses Node.js server with socket.io for real-time communication handling. The frontend is JavaScript with Bootstrap for responsive design.

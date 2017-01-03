@@ -331,9 +331,7 @@
         });
 
         socket.on('private', function(room) {
-            console.log("Received private");
             if(!(room.id in data)) {
-                console.log("Creating private");
                 var $span = $('<span>').text(room.name).addClass('private');
                 $('#rooms').append($('<span>').addClass('badge pull-right').hide());
                 $('#rooms').append($('<li>').addClass('roomName').attr('data-roomid', room.id).append($span));
@@ -346,7 +344,6 @@
                 }
                 data[room.id] = new_room;
             }
-
         });
 
         socket.on('chat message', function(msg){
