@@ -99,11 +99,21 @@ body {
 		resize: none;
 	}
 
+	.emoji {
+		cursor: pointer;
+		background: none;
+		border: none;
+		&:hover {
+			background: #eee;
+		};
+	}
+
 	#btn-emoji {
 		position: absolute;
 		top: 20px;
 		right: 25px;
 		font-size: 1.5em;
+
 	}
 }
 

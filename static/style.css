@@ -68,6 +68,12 @@ body {
   position: relative; }
   .panel-footer #chat-input {
     resize: none; }
+  .panel-footer .emoji {
+    cursor: pointer;
+    background: none;
+    border: none; }
+    .panel-footer .emoji:hover {
+      background: #eee; }
   .panel-footer #btn-emoji {
     position: absolute;
     top: 20px;

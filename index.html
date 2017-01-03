@@ -85,7 +85,23 @@
                     </div>
                 </div>
                 <div class="panel-footer">
-                    <button class="btn btn-warning btn-xs" id="btn-emoji">😀</button>
+        
+
+                    <button class="btn btn-warning btn-xs" id="btn-emoji" data-placement="top" title="Emojis">😀</button>
+                    <div id="popover_content_wrapper" style="display: none">
+                        <div>
+                            <button class="emoji">👍</button>
+                            <button class="emoji">😁</button>
+                            <button class="emoji">😀</button>
+                            <button class="emoji">😊</button>
+                            <button class="emoji">😐</button>
+                            <button class="emoji">😕</button>
+                            <button class="emoji">😞</button>
+                            <button class="emoji">😬</button>
+                            <button class="emoji">🙄</button>
+                            <button class="emoji">👎</button>
+                        </div>
+                    </div>
                     <textarea class="form-control" rows="3" id="chat-input"></textarea>
                     <button class="btn btn-warning btn-md btn-block" id="btn-chat">Send</button>
                 </div>
@@ -258,19 +274,22 @@
             }
         });
 
-        $('#btn-emoji').click(function() {
-            var C = 0x1f600;
-            H = Math.floor((C - 0x10000) / 0x400) + 0xD800
-            L = (C - 0x10000) % 0x400 + 0xDC00
-
+        $('body').on('click', '.emoji', function() {
             var $txt = jQuery("#chat-input");
             var caretPos = $txt[0].selectionStart;
             var textAreaTxt = $txt.val();
-            var txtToAdd = String.fromCharCode(H,L);
+            txtToAdd = $(this).text();
             $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
             $txt[0].selectionStart = caretPos + txtToAdd.length;
             $('#chat-input').focus();
         });
+
+      $('#btn-emoji').popover({ 
+        html : true,
+        content: function() {
+          return $('#popover_content_wrapper').html();
+        }
+      });
 
         $('#inputUsername').keypress(function(e) {
             if(e.which == 13) {
