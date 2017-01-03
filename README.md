@@ -15,6 +15,7 @@ ssChat is a simple chat browser program running on Node.js. ssChat uses socket.i
 - Public room creation
 - Private channels (click username to initiale)
 - Upload avatar images
+- Initial emoji support (only 1 emoji :) )
 
 ## Technologies
 
@@ -23,4 +24,3 @@ The backend uses Node.js server with socket.io for real-time communication handl
 ## Future plans
 
 - MongoDB for messages
-- Better emoticon support + UI

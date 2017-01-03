@@ -85,6 +85,7 @@
                     </div>
                 </div>
                 <div class="panel-footer">
+                    <button class="btn btn-warning btn-xs" id="btn-emoji">😀</button>
                     <textarea class="form-control" rows="3" id="chat-input"></textarea>
                     <button class="btn btn-warning btn-md btn-block" id="btn-chat">Send</button>
                 </div>
@@ -255,6 +256,19 @@
                 e.preventDefault();
                 $('#btn-chat').click();
             }
+        });
+
+        $('#btn-emoji').click(function() {
+            var C = 0x1f600;
+            H = Math.floor((C - 0x10000) / 0x400) + 0xD800
+            L = (C - 0x10000) % 0x400 + 0xDC00
+
+            var $txt = jQuery("#chat-input");
+            var caretPos = $txt[0].selectionStart;
+            var textAreaTxt = $txt.val();
+            var txtToAdd = String.fromCharCode(H,L);
+            $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
+            $txt[0].selectionStart = caretPos + txtToAdd.length;
         });
 
         $('#inputUsername').keypress(function(e) {

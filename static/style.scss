@@ -94,8 +94,16 @@ body {
 }
 
 .panel-footer {
+	position: relative;
 	#chat-input{
 		resize: none;
+	}
+
+	#btn-emoji {
+		position: absolute;
+		top: 20px;
+		right: 25px;
+		font-size: 1.5em;
 	}
 }
 

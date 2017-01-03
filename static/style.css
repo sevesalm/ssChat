@@ -64,8 +64,15 @@ body {
     transition: transform 0.3s;
     transform: scale(1.4); }
 
-.panel-footer #chat-input {
-  resize: none; }
+.panel-footer {
+  position: relative; }
+  .panel-footer #chat-input {
+    resize: none; }
+  .panel-footer #btn-emoji {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 1.5em; }
 
 #messages {
   list-style-type: none;
