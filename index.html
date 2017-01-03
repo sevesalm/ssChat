@@ -284,12 +284,16 @@
             $('#chat-input').focus();
         });
 
-      $('#btn-emoji').popover({ 
-        html : true,
-        content: function() {
-          return $('#popover_content_wrapper').html();
-        }
-      });
+        $('#btn-emoji').popover({
+            html : true,
+            content: function() {
+              return $('#popover_content_wrapper').html();
+            }
+        });
+
+        $('#btn-emoji').on('hide.bs.popover show.bs.popover', function() {
+            $('#chat-input').focus();
+        });
 
         $('#inputUsername').keypress(function(e) {
             if(e.which == 13) {

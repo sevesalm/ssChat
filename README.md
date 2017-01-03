@@ -24,3 +24,6 @@ The backend uses Node.js server with socket.io for real-time communication handl
 ## Future plans
 
 - MongoDB for messages
+- File uploads
+- Better UI design
+- Room deletion
