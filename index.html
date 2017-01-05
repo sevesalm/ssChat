@@ -19,6 +19,7 @@
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.16.0/moment.min.js" type="text/javascript"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/4.3.0/min/dropzone.min.js" type="text/javascript"></script>
+        <script src="static/bootstrap-notify.min.js" type="text/javascript"></script>
     </head>
 
     <body>
@@ -29,16 +30,16 @@
                 <h4 class="modal-title text-center">Options</h4>
               </div>
               <div class="modal-body">
+                <div class="username-block">
                   <div class="form-group has-feedback" id="divUsername">
                     <label for="inputUsername">Username</label>
                     <input type="text" class="form-control" id="inputUsername" placeholder="Username" autocomplete="off">
+                    <button type="button" class="btn btn-primary pull-right" id="profile-modal-save">Apply</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal" id="profile-modal-close">Close</button>
                   </div>
-                  <form action="/file-upload" class="dropzone" id="avatar-dz"></form>
-                  <button type="button" class="btn btn-success center-block" id="new_btn">Upload avatar...</button>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal" id="profile-modal-close">Close</button>
-                <button type="button" class="btn btn-primary" id="profile-modal-save">Save changes</button>
+                </div>
+                <form action="/file-upload" class="dropzone" id="avatar-dz"></form>
+                <button type="button" class="btn btn-success center-block" id="new_btn">Upload avatar...</button>
               </div>
             </div><!-- /.modal-content -->
           </div><!-- /.modal-dialog -->
@@ -204,8 +205,8 @@
 
         Dropzone.options.avatarDz = {
             url:                '/upload',
-            maxFilesize:        2,
-            dictDefaultMessage: "Upload avatar image",
+            maxFilesize:        0.5,
+            dictDefaultMessage: "",
             autoProcessQueue:   true,
             acceptedFiles:      "image/*",
             clickable:          "#new_btn, .dropzone",
@@ -233,7 +234,7 @@
                     }
                     return info;
                 },
-            init:               function() {
+            init: function() {
                 this.on("success", function(file, res) {
                     me.avatarUrl = res.path;
                     $('.dz-image img').addClass('img-responsive');
@@ -243,6 +244,20 @@
                 });
                 this.on('thumbnail', function(file, res){
                     $('.dz-image').height(75);
+                });
+                this.on('error', function(file, res){
+                    var DZ = Dropzone.forElement("#avatar-dz");
+                    files = DZ.getRejectedFiles();
+                    files.forEach(function(file) {
+                        DZ.removeFile(file);
+                    });
+                    $.notify({message: res },{  
+                        element: $('.modal-open'), 
+                        type: 'danger', 
+                        placement: {from: "top", align: "center"},
+                        delay: 3000,
+                        allow_dismiss: false,
+                        z_index: 10000});
                 });
             }
         }
@@ -255,7 +270,6 @@
             var buddy = $(this).text();
             socket.emit('create private', buddy);
         })
-
 
         $('.rooms').on('click', 'li', function() {
             var room_id = $(this).attr('data-roomid');
@@ -340,7 +354,6 @@
                     $('#divUsername').removeClass('has-error');
                     $('#usernameErrorIcon').remove();
                     $('#profile-modal').modal('hide');
-                    $('#profile-modal-close').show();
                     $('#profile-modal').data('bs.modal').options.keyboard = true;
                     $('#profile-modal').data('bs.modal').options.backdrop = true;
                     if(my_room == null) {
@@ -362,6 +375,16 @@
         $('#profile-modal').on('shown.bs.modal', function() {
             $('#inputUsername').val(me.name);
             $('#inputUsername').focus();
+        });
+
+        // Clear rejected file when modal is hidden
+        $('#profile-modal').on('hidden.bs.modal', function() {
+            var DZ = Dropzone.forElement("#avatar-dz");
+            var files = DZ.getRejectedFiles();
+            files.forEach(function(file) {
+                DZ.removeFile(file);
+            });
+            $('#profile-modal-close').show();
         });
 
         $('#newRoomModal').on('shown.bs.modal', function () {
@@ -410,12 +433,6 @@
             snd.play();
         });
 
-        // socket.on('username', function(msg){
-        //     my_username = msg;
-        //     //$('#label').text(msg);
-        //     $('#inputUsername').val(my_username);
-        // });
-
         socket.on('join room', function(user, room) {
             if(my_room === room) {
                 $('#messages').append($('<li>').addClass('clearfix text-center').text(user.name + " joined"));
@@ -423,13 +440,6 @@
             }
         });
 
-        // socket.on('user connected', function(msg){
-        //     $('#messages').append($('<li>').addClass('clearfix text-center').text(msg + " connected"));
-        // });
-
-        // socket.on('user disconnected', function(msg){
-        //     $('#messages').append($('<li>').addClass('clearfix text-center').text(msg + " disconnected"));
-        // });
         $('#profile-modal').modal({
           backdrop: 'static',
           keyboard: false

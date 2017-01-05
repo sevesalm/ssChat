@@ -27,3 +27,4 @@ The backend uses Node.js server with socket.io for real-time communication handl
 - File uploads
 - Better UI design
 - Room deletion
+- Room creation for mobile

@@ -7,11 +7,17 @@ body {
     height: 100%;
 }
 
+.username-block {
+	button {
+		margin: 10px 0px 10px 10px;
+	}
+}
+
 .dropzone {
-	padding: 0px !important;
-	margin: 0px;
+	margin-bottom: 20px;
+	clear: both;
 	text-align: center;
-	border: 0px !important;
+	border: 1px solid #bbb !important;
 	.dz-details {
 		display:none;
 	}
