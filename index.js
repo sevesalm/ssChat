@@ -5,6 +5,34 @@ var io = require('socket.io')(http);
 var multer = require('multer');
 var upload = multer({dest: 'uploads/'}).single('file');
 
+var MongoClient = require('mongodb').MongoClient;
+var mongoUrl = 'mongodb://localhost:27017/ssChat';
+var mongoDB = null;
+
+var room_id = 3;
+
+var rooms = [ {name: 'Main', id: 0, messages: []}, 
+              {name: 'Programming', id: 1, messages: []}, 
+              {name: 'Religion', id: 2, messages: []} 
+];
+
+var private_rooms = [];
+
+// Connect to MongoDB and save the db
+MongoClient.connect(mongoUrl, function(err, db) {
+  console.log("Connected Mongodb");
+  mongoDB = db;
+  mongoDB.collection('messages').drop();
+  mongoDB.collection('users').drop();
+  mongoDB.collection('rooms').drop();
+});
+
+function saveMessage(msg) {
+  var collection = mongoDB.collection('messages');
+  collection.insertOne(msg);
+}
+
+
 app.use(express.static(__dirname))
 
 app.get('/', function(req, res){
@@ -19,39 +47,10 @@ app.post('/upload', function (req, res) {
       return;
     }
 
-    //res.send('POST request to /upload');
     return res.status( 200 ).send( req.file );
   });
 });
 
-var room_id = 3;
-
-var rooms = [ {name: 'Main', id: 0, messages: []}, 
-              {name: 'Programming', id: 1, messages: []}, 
-              {name: 'Religion', id: 2, messages: []} 
-];
-
-var private_rooms = [];
-
-var users = [];
-
-function get_user_id(username) {
-  for(var i = 0; i < users.length; i++) {
-    if(users[i].username === username) {
-      return users[i].id;
-    }
-  }
-  return null;
-}
-
-function get_username(id) {
-  for(var i = 0; i < users.length; i++) {
-    if(users[i].id === id) {
-      return users[i].username;
-    }
-  }
-  return null;
-}
 
 function create_private(socket1, socket2) {
   if(socket1 === socket2) 
@@ -73,16 +72,14 @@ function create_private(socket1, socket2) {
 }
 
 io.on('connection', function(socket){
-  //var username = 'user'+Math.random().toString().slice(2,7);
   //socket.broadcast.emit('user connected', user);
+  users.push({username: null, id: socket.id});
+  mongoDB.collection('users').insertOne({username: null, id: socket.id});
 
   socket.on('disconnect', function(){
-    for (var i = 0; i<users.length;i++) {
-      if(users[i].id === socket.id) {
-        users.splice(i,1);
-        break;
-      }
-    }
+    mongoDB.collection('users').deleteOne({id: socket.id}, function() {
+      return;
+    });
     //io.emit('user disconnected', user);
   });
 
@@ -92,6 +89,8 @@ io.on('connection', function(socket){
       if(item.id === msg.room) {
         room = item;
         // Push the message, store at most N newest
+        saveMessage(msg);
+
         room.messages.push(msg);
         if(room.messages.length > 100) {
           room.messages.shift();
@@ -128,15 +127,18 @@ io.on('connection', function(socket){
   });
 
   socket.on('create private', function(username) {
-    var buddy_id = get_user_id(username);
-    var users = create_private(socket.id, buddy_id);
-    if(users !== null) {
-      var room = {id: room_id, users: users};
-      private_rooms.push(room);
-      io.sockets.connected[buddy_id].emit("private", {id: room_id, name: get_username(socket.id), messages: []});
-      socket.emit("private", {id: room_id, name: username});
-      room_id += 1;
-    }
+    mongoDB.collection('users').findOne({username: username}, function(err, buddy) {
+      mongoDB.collection('users').findOne({id: socket.id}, function(err, me) {
+        var priv_users = create_private(me.id, buddy.id);
+        if(priv_users !== null) {
+          var room = {id: room_id, users: priv_users};
+          private_rooms.push(room);
+          io.sockets.connected[buddy.id].emit("private", {id: room_id, name: me.username, messages: []});
+          socket.emit("private", {id: room_id, name: username});
+          room_id += 1;
+        }
+      });
+    });
   });
 
   socket.on('username', function(username, cb) {
@@ -144,31 +146,29 @@ io.on('connection', function(socket){
       cb({status: 1, message: 'Failure'});
       return;
     }
-    var user_idx = null;
-    for(var i = 0; i < users.length; i++) {
-      if(users[i].username === username) {
-        if(users[i].id === socket.id) {
+    mongoDB.collection('users').findOne({username: username}, function(err, username_owner) {
+      mongoDB.collection('users').findOne({id: socket.id}, function(err, me) {
+        if(me === username_owner) {
+          // No change in name
           cb({status: 0, message: 'Success', username: username});
-          return;
+        }
+        else if(username_owner === null) {
+          // Userame not in use
+          if(me.username === null) {
+            // Initial room list
+            socket.emit("rooms", rooms);
+          }
+          //me.username = username;
+          mongoDB.collection('users').updateOne({id: socket.id}, {$set: {username: username}}, function() {
+            cb({status: 0, message: 'Success', username: username});
+          });
         }
         else {
+          // Username in use
           cb({status: 1, message: 'Failure'});
-          return;
         }
-      }
-      if(users[i].id === socket.id) {
-        user_idx = i;
-      }
-    }
-    // Valid username, save and approve
-    if(user_idx === null) {
-      users.push({username: username, id: socket.id});
-      socket.emit("rooms", rooms);
-    }
-    else {
-      users[user_idx].username = username;
-    }
-    cb({status: 0, message: 'Success', username: username});
+      });
+    });
   });
 });
 

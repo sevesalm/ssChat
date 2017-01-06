@@ -180,7 +180,7 @@
 
             function to_room(room_id) {
                 get_room_by_id(my_room).removeClass('active');
-                my_room = room_id;
+                my_room = parseInt(room_id);
                 get_room_by_id(room_id).addClass('active');
                 $("#room-select").val(get_room_name(room_id));
 
