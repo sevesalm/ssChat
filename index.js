@@ -11,27 +11,10 @@ var mongoDB = null;
 
 var room_id = 3;
 
-var rooms = [ {name: 'Main', id: 0, messages: []}, 
-              {name: 'Programming', id: 1, messages: []}, 
-              {name: 'Religion', id: 2, messages: []} 
+var rooms = [ {name: 'Main', public: true, id: 0}, 
+              {name: 'Programming', public: true, id: 1}, 
+              {name: 'Religion', public: true, id: 2} 
 ];
-
-var private_rooms = [];
-
-// Connect to MongoDB and save the db
-MongoClient.connect(mongoUrl, function(err, db) {
-  console.log("Connected Mongodb");
-  mongoDB = db;
-  mongoDB.collection('messages').drop();
-  mongoDB.collection('users').drop();
-  mongoDB.collection('rooms').drop();
-});
-
-function saveMessage(msg) {
-  var collection = mongoDB.collection('messages');
-  collection.insertOne(msg);
-}
-
 
 app.use(express.static(__dirname))
 
@@ -51,96 +34,98 @@ app.post('/upload', function (req, res) {
   });
 });
 
+// Connect to MongoDB and save the db
+MongoClient.connect(mongoUrl, function(err, db) {
+  console.log("Connected Mongodb");
+  mongoDB = db;
+  mongoDB.collection('messages').drop();
+  mongoDB.collection('users').drop();
+  mongoDB.collection('rooms').drop();
+  mongoDB.collection('rooms').insert(rooms);
+});
 
-function create_private(socket1, socket2) {
-  if(socket1 === socket2) 
-    return null;
-  if(socket1 === null || socket2 === null) 
-    return null;
-
-  if(socket1 > socket2) {
-    var temp = socket2;
-    socket2 = socket1;
-    socket1 = temp;
-  }
-  for(var i = 0; i<private_rooms.length; i++) {
-    if(private_rooms[i].users[0] == socket1 && private_rooms[i].users[1] ===socket2) {
-      return null;
-    }
-  }
-  return [socket1, socket2];
+function is_connected(id) {
+  return (io.sockets.connected[id] !== undefined && io.sockets.connected[id].connected);
 }
+
 
 io.on('connection', function(socket){
   //socket.broadcast.emit('user connected', user);
-  users.push({username: null, id: socket.id});
   mongoDB.collection('users').insertOne({username: null, id: socket.id});
 
   socket.on('disconnect', function(){
     mongoDB.collection('users').deleteOne({id: socket.id}, function() {
-      return;
+      mongoDB.collection('rooms').find({members: {$in: [socket.id]}}).toArray(function(err, rooms) {
+        // Delete private channels user participated in 
+        rooms.forEach(function(room) {
+          room.members.forEach(function(member) {
+            if(is_connected(member)) {
+              io.sockets.connected[member].emit('delete room', room.id);
+            }
+          });
+        });
+        return;
+      });
     });
     //io.emit('user disconnected', user);
   });
 
+  // User sends a message
   socket.on('chat message', function(msg){
-    var room;
-    rooms.forEach(function(item) {
-      if(item.id === msg.room) {
-        room = item;
-        // Push the message, store at most N newest
-        saveMessage(msg);
-
-        room.messages.push(msg);
-        if(room.messages.length > 100) {
-          room.messages.shift();
-        }
+    mongoDB.collection('messages').insertOne(msg);
+    mongoDB.collection('rooms').findOne({id: msg.room}, function(err, room) {
+      if(room.public === true) {
+        // Send public messages to all except sender
         socket.broadcast.emit('chat message', msg);
       }
-    });
-
-    for(var i = 0; i<private_rooms.length; i++) {
-      if(private_rooms[i].id == msg.room) {
-        var room = private_rooms[i];
-        var buddy = null;
-        if(socket.id === room.users[0]) {
-          buddy = room.users[1];
-        }
-        else if(socket.id === room.users[1]) {
-          buddy = room.users[0];
-        }
-        if(buddy) {
-          io.sockets.connected[buddy].emit('chat message', msg);
-        }
+      else {
+        // Send private messages only to other party
+        room.members.forEach(function(member) {
+          if(member !== socket.id && is_connected(member)) {
+            io.sockets.connected[member].emit('chat message', msg);
+          }
+        });
       }
-    }
+    });
   });
 
+  // User joins a room
   socket.on('join room', function(user, room) {
     socket.broadcast.emit('join room', user, room);
   });
 
+  // User requests a new public room
   socket.on('create room', function(roomname) {
-    rooms.push({name: roomname, id: room_id, messages: []});
+    var room = {name: roomname, public: true, id: room_id};
     room_id += 1;
-    io.emit("rooms", rooms);
+    mongoDB.collection('rooms').insertOne(room, function() {
+      io.emit("new public", room, []);
+    });
   });
 
+  // User wants to create a private room
   socket.on('create private', function(username) {
     mongoDB.collection('users').findOne({username: username}, function(err, buddy) {
       mongoDB.collection('users').findOne({id: socket.id}, function(err, me) {
-        var priv_users = create_private(me.id, buddy.id);
-        if(priv_users !== null) {
-          var room = {id: room_id, users: priv_users};
-          private_rooms.push(room);
-          io.sockets.connected[buddy.id].emit("private", {id: room_id, name: me.username, messages: []});
-          socket.emit("private", {id: room_id, name: username});
-          room_id += 1;
-        }
+        mongoDB.collection('rooms').findOne({$and: [{public: false},{members: {$in: [buddy.id]}}, {members: {$in: [me.id]}}]}, function(err, room) {
+          if(room === null) {
+            // No such private room exists
+            var room = {
+              members: [me.id, buddy.id], 
+              public: false, 
+              id: room_id
+            };
+            mongoDB.collection('rooms').insertOne(room);
+            io.sockets.connected[buddy.id].emit("new private", {id: room_id, name: me.username});
+            socket.emit("new private", {id: room_id, name: username});
+            room_id += 1;
+          }
+        });
       });
     });
   });
 
+  // User requests a username
   socket.on('username', function(username, cb) {
     if(username === '') {
       cb({status: 1, message: 'Failure'});
@@ -155,10 +140,15 @@ io.on('connection', function(socket){
         else if(username_owner === null) {
           // Userame not in use
           if(me.username === null) {
-            // Initial room list
-            socket.emit("rooms", rooms);
+            // Emit initial room list
+            mongoDB.collection('rooms').find({public: true}).sort({id: 1}).toArray(function(err, rooms) {
+              rooms.forEach(function(room) {
+                mongoDB.collection('messages').find({room: room.id}).limit(100).sort({time: 1}).toArray(function(err, messages) {
+                  socket.emit("new public", room, messages);
+                });
+              });
+            });
           }
-          //me.username = username;
           mongoDB.collection('users').updateOne({id: socket.id}, {$set: {username: username}}, function() {
             cb({status: 0, message: 'Success', username: username});
           });

@@ -324,7 +324,7 @@
             // Send message
             $('#btn-chat').click(function(){
                 var str = $('#chat-input').val();
-                if(str==="")
+                if(str==="" || my_room === null)
                     return false;
                 var message = {
                     user:       me,
@@ -354,9 +354,6 @@
                         $('#profile-modal').modal('hide');
                         $('#profile-modal').data('bs.modal').options.keyboard = true;
                         $('#profile-modal').data('bs.modal').options.backdrop = true;
-                        if(my_room == null) {
-                            to_room(0);
-                        }
                     }
                     else {
                         if(!$('#divUsername').hasClass('has-error')) {
@@ -364,7 +361,6 @@
                             var $errorIcon = $('<span>').addClass('glyphicon glyphicon-remove form-control-feedback').attr('aria-hidden', 'true').attr('id', 'usernameErrorIcon');
                             $('#inputUsername').after($errorIcon);
                         }
-
                     }
                 });
 
@@ -387,42 +383,38 @@
 
             $('#newRoomModal').on('shown.bs.modal', function () {
               $('#inputRoomname').focus();
-            })
-
-            socket.on('rooms', function(rooms){
-                rooms.forEach(function(room) {
-                    if(!(room.id in data)) {
-                        var $span = $('<span>').text(room.name);
-                        $('#rooms').append($('<span>').addClass('badge pull-right').hide());
-                        $('#rooms').append($('<li>').addClass('roomName').attr('data-roomid', room.id).append($span));
-                        var $option = $('<option>').attr('data-roomid', room.id).text(room.name);
-                        $('#room-select').append($option);
-                        var new_room = {
-                            messages: [],
-                            unread: 0,
-                            name: room.name
-                        }
-                        data[room.id] = new_room;
-                        room.messages.forEach(function(msg) {
-                            save_message(msg, false);
-                        });
-                    }
-                });
             });
 
-            socket.on('private', function(room) {
+            function add_room(room) {
+                var $span = $('<span>').text(room.name);
+                if(!room.public) {
+                    $span.addClass('private');
+                }
+                $('#rooms').append($('<span>').addClass('badge pull-right').hide());
+                $('#rooms').append($('<li>').addClass('roomName').attr('data-roomid', room.id).append($span));
+                var $option = $('<option>').attr('data-roomid', room.id).text(room.name);
+                $('#room-select').append($option);
+                var new_room = {
+                    messages: [],
+                    unread: 0,
+                    name: room.name
+                }
+                data[room.id] = new_room;
+                return;
+            }
+
+            socket.on('new public', function(room, messages){
                 if(!(room.id in data)) {
-                    var $span = $('<span>').text(room.name).addClass('private');
-                    $('#rooms').append($('<span>').addClass('badge pull-right').hide());
-                    $('#rooms').append($('<li>').addClass('roomName').attr('data-roomid', room.id).append($span));
-                    var $option = $('<option>').attr('data-roomid', room.id).text(room.name);
-                    $('#room-select').append($option);
-                    var new_room = {
-                        messages: [],
-                        unread: 0,
-                        name: room.name
-                    }
-                    data[room.id] = new_room;
+                    add_room(room);
+                    messages.forEach(function(msg) {
+                        save_message(msg, false);
+                    });
+                }
+            });
+
+            socket.on('new private', function(room) {
+                if(!(room.id in data)) {
+                    add_room(room);
                 }
             });
 
@@ -436,6 +428,21 @@
                     $('#messages').append($('<li>').addClass('clearfix text-center').text(user.name + " joined"));
                     $('.msg-container').animate({scrollTop: $('.msg-container').prop("scrollHeight")}, 500);
                 }
+            });
+
+            socket.on('delete room', function(room) {
+                if(my_room === room) {
+                    my_room = null;
+                }
+                console.log("Delete room: ", room);
+                $room = get_room_by_id(room);
+                $room.prev().remove();
+                $room.remove();
+                console.log(data);
+                delete data[room];
+                console.log(data);
+
+
             });
 
             $('#profile-modal').modal({
