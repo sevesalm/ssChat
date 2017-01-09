@@ -37,15 +37,17 @@ app.post('/upload', function (req, res) {
 
 // Connect to MongoDB and save the db
 MongoClient.connect(mongoUrl, function(err, db) {
-  console.log("Connected Mongodb");
+  console.log("MongoDB: connected");
   mongoDB = db;
 
   // Clear all previous data from DB
+  console.log("MongoDB: clearing previous collections");
   mongoDB.collection('messages').remove();
   mongoDB.collection('users').remove();
   mongoDB.collection('rooms').remove();
 
   // Insert initial public room
+  console.log("MongoDB: insert initial rooms");
   mongoDB.collection('rooms').insert(initial_rooms);
 });
 
@@ -168,6 +170,7 @@ io.on('connection', function(socket){
 });
 
 // Start the server
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+var port = 3000
+http.listen(port, function(){
+  console.log('listening on localhost:%d', port);
 });
