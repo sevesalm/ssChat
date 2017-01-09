@@ -11,9 +11,10 @@ var mongoDB = null;
 
 var room_id = 3;
 
-var rooms = [ {name: 'Main', public: true, id: 0}, 
-              {name: 'Programming', public: true, id: 1}, 
-              {name: 'Religion', public: true, id: 2} 
+var initial_rooms = [ 
+  {name: 'Main', public: true, id: 0}, 
+  {name: 'Programming', public: true, id: 1}, 
+  {name: 'Religion', public: true, id: 2} 
 ];
 
 app.use(express.static(__dirname))
@@ -38,10 +39,14 @@ app.post('/upload', function (req, res) {
 MongoClient.connect(mongoUrl, function(err, db) {
   console.log("Connected Mongodb");
   mongoDB = db;
-  mongoDB.collection('messages').drop();
-  mongoDB.collection('users').drop();
-  mongoDB.collection('rooms').drop();
-  mongoDB.collection('rooms').insert(rooms);
+
+  // Clear all previous data from DB
+  mongoDB.collection('messages').remove();
+  mongoDB.collection('users').remove();
+  mongoDB.collection('rooms').remove();
+
+  // Insert initial public room
+  mongoDB.collection('rooms').insert(initial_rooms);
 });
 
 function is_connected(id) {
@@ -135,7 +140,7 @@ io.on('connection', function(socket){
       mongoDB.collection('users').findOne({id: socket.id}, function(err, me) {
         if(me === username_owner) {
           // No change in name
-          cb({status: 0, message: 'Success', username: username});
+          cb({status: 0, message: 'Success', username: username, avatarURL: 'http://placehold.it/100/bbb/333&text=User'});
         }
         else if(username_owner === null) {
           // Userame not in use
@@ -150,11 +155,11 @@ io.on('connection', function(socket){
             });
           }
           mongoDB.collection('users').updateOne({id: socket.id}, {$set: {username: username}}, function() {
-            cb({status: 0, message: 'Success', username: username});
+            cb({status: 0, message: 'Success', username: username, avatarURL: 'http://placehold.it/100/bbb/333&text=User'});
           });
         }
         else {
-          // Username in use
+          // Username already in use
           cb({status: 1, message: 'Failure'});
         }
       });
@@ -162,6 +167,7 @@ io.on('connection', function(socket){
   });
 });
 
-http.listen(3000, '0.0.0.0', function(){
+// Start the server
+http.listen(3000, function(){
   console.log('listening on *:3000');
 });
