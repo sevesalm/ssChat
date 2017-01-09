@@ -181,7 +181,6 @@
             function to_room(room_id) {
                 if(room_id === null) {
                     var $message = $('<h3>').text('Please select a room').addClass('text-center').attr('id', 'empty-room-msg');
-                    console.log("To lobby");
                     $('#messages').empty();
                     $('.msg-container').append($message);
                     my_room = null;
