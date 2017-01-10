@@ -322,6 +322,7 @@ $('#profile-modal').on('hidden.bs.modal', function() {
         DZ.removeFile(file);
     });
     $('#profile-modal-close').show();
+    $('#chat-input').focus();
 });
 
 $('#newRoomModal').on('shown.bs.modal', function () {
