@@ -1,5 +1,5 @@
 var socket = io();
-var me = {name: null};
+var me = {name: null, avatarURL: 'http://placehold.it/100/bbb/333&text=User'};
 var data = {};
 var my_room = null;
 var snd = new Audio("static/blip.mp3");
@@ -293,7 +293,6 @@ $('#profile-modal-save').click(function() {
                 to_room(null);
             }
             me.name = data.username;
-            me.avatarURL = data.avatarURL;
             $('#divUsername').removeClass('has-error');
             $('#usernameErrorIcon').remove();
             $('#profile-modal').modal('hide');

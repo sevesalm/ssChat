@@ -41,7 +41,7 @@ MongoClient.connect(mongoUrl, function(err, db) {
   mongoDB = db;
 
   // Clear all previous data from DB
-  console.log("MongoDB: clearing previous collections");
+  console.log("MongoDB: clear previous collections");
   mongoDB.collection('messages').remove();
   mongoDB.collection('users').remove();
   mongoDB.collection('rooms').remove();
@@ -49,6 +49,12 @@ MongoClient.connect(mongoUrl, function(err, db) {
   // Insert initial public room
   console.log("MongoDB: insert initial rooms");
   mongoDB.collection('rooms').insert(initial_rooms);
+
+  // Start the server
+  var port = 3000
+  http.listen(port, function(){
+    console.log('ssChat: listen on localhost:%d', port);
+  });
 });
 
 function is_connected(id) {
@@ -142,7 +148,7 @@ io.on('connection', function(socket){
       mongoDB.collection('users').findOne({id: socket.id}, function(err, me) {
         if(me === username_owner) {
           // No change in name
-          cb({status: 0, message: 'Success', username: username, avatarURL: 'http://placehold.it/100/bbb/333&text=User'});
+          cb({status: 0, message: 'Success', username: username});
         }
         else if(username_owner === null) {
           // Userame not in use
@@ -157,7 +163,7 @@ io.on('connection', function(socket){
             });
           }
           mongoDB.collection('users').updateOne({id: socket.id}, {$set: {username: username}}, function() {
-            cb({status: 0, message: 'Success', username: username, avatarURL: 'http://placehold.it/100/bbb/333&text=User'});
+            cb({status: 0, message: 'Success', username: username});
           });
         }
         else {
@@ -169,8 +175,3 @@ io.on('connection', function(socket){
   });
 });
 
-// Start the server
-var port = 3000
-http.listen(port, function(){
-  console.log('listening on localhost:%d', port);
-});
