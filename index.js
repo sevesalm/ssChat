@@ -146,14 +146,10 @@ io.on('connection', function(socket){
     }
     mongoDB.collection('users').findOne({username: username}, function(err, username_owner) {
       mongoDB.collection('users').findOne({id: socket.id}, function(err, me) {
-        if(me === username_owner) {
-          // No change in name
-          cb({status: 0, message: 'Success', username: username});
-        }
-        else if(username_owner === null) {
-          // Userame not in use
+        if(username_owner === null) {
+          // Requested userame not in use
           if(me.username === null) {
-            // Emit initial room list
+            // Initial username request - emit initial room list
             mongoDB.collection('rooms').find({public: true}).sort({id: 1}).toArray(function(err, rooms) {
               rooms.forEach(function(room) {
                 mongoDB.collection('messages').find({room: room.id}).limit(100).sort({time: 1}).toArray(function(err, messages) {
@@ -165,6 +161,10 @@ io.on('connection', function(socket){
           mongoDB.collection('users').updateOne({id: socket.id}, {$set: {username: username}}, function() {
             cb({status: 0, message: 'Success', username: username});
           });
+        }
+        else if(me.id == username_owner.id) {
+          // No change in name
+          cb({status: 0, message: 'Success', username: username});
         }
         else {
           // Username already in use
