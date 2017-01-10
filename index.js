@@ -120,20 +120,22 @@ io.on('connection', function(socket){
   socket.on('create private', function(username) {
     mongoDB.collection('users').findOne({username: username}, function(err, buddy) {
       mongoDB.collection('users').findOne({id: socket.id}, function(err, me) {
-        mongoDB.collection('rooms').findOne({$and: [{public: false},{members: {$in: [buddy.id]}}, {members: {$in: [me.id]}}]}, function(err, room) {
-          if(room === null) {
-            // No such private room exists
-            var room = {
-              members: [me.id, buddy.id], 
-              public: false, 
-              id: room_id
-            };
-            mongoDB.collection('rooms').insertOne(room);
-            io.sockets.connected[buddy.id].emit("new private", {id: room_id, name: me.username});
-            socket.emit("new private", {id: room_id, name: username});
-            room_id += 1;
-          }
-        });
+        if(me && buddy) {
+          mongoDB.collection('rooms').findOne({$and: [{public: false},{members: {$in: [buddy.id]}}, {members: {$in: [me.id]}}]}, function(err, room) {
+            if(room === null) {
+              // No such private room exists
+              var room = {
+                members: [me.id, buddy.id], 
+                public: false, 
+                id: room_id
+              };
+              mongoDB.collection('rooms').insertOne(room);
+              io.sockets.connected[buddy.id].emit("new private", {id: room_id, name: me.username});
+              socket.emit("new private", {id: room_id, name: username});
+              room_id += 1;
+            }
+          });
+        }
       });
     });
   });
