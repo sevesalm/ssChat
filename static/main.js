@@ -242,6 +242,14 @@ $('#btn-emoji').popover({
     }
 });
 
+$('#btn-emoji').on('mouseenter', function () {
+    $('#btn-emoji').popover('show');
+});
+
+$('.panel-footer').on('mouseleave', '.popover', function() {
+    $('#btn-emoji').popover('hide');
+});
+
 $('#btn-emoji').on('hide.bs.popover show.bs.popover', function() {
     $('#chat-input').focus();
 });

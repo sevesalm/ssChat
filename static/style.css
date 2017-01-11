@@ -72,6 +72,7 @@ body {
   .panel-footer #chat-input {
     resize: none; }
   .panel-footer .emoji {
+    font-size: 2em;
     cursor: pointer;
     background: none;
     border: none; }
