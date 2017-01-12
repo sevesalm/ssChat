@@ -127,11 +127,11 @@ function delete_room(room) {
 // Initial UI setup
 resize_body();
 
-
 // Dropzone initialization and event handling
 Dropzone.options.avatarDz = {
-    url:                '/upload',
-    maxFilesize:        0.5,
+    // Next is needed because Multer messes up with csurf
+    url:                '/upload?_csrf='+csrf_token,
+    maxFilesize:        2.0,
     dictDefaultMessage: "",
     autoProcessQueue:   true,
     acceptedFiles:      "image/*",
@@ -167,6 +167,7 @@ Dropzone.options.avatarDz = {
         });
         this.on('sending', function(file, xhr, formData){
             formData.append('user_id', socket.id);
+            formData.append('_csrf', csrf_token);
         });
         this.on('thumbnail', function(file, res){
             $('.dz-image').height(75);

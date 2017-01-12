@@ -5,6 +5,14 @@ var io = require('socket.io')(http);
 var multer = require('multer');
 var upload = multer({dest: 'uploads/'}).single('file');
 
+// CSRF prevention middleware
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
+var csrf = require('csurf');
+var csrfProtection = csrf({ cookie: true });
+var parseForm = bodyParser.urlencoded({ extended: false });
+
+// MongoDB setup
 var MongoClient = require('mongodb').MongoClient;
 var mongoUrl = 'mongodb://localhost:27017/ssChat';
 var mongoDB = null;
@@ -17,44 +25,52 @@ var initial_rooms = [
   {name: 'Religion', public: true, id: 2} 
 ];
 
-app.use(express.static(__dirname))
+app.set('view engine', 'ejs');
+app.use(express.static(__dirname));
+app.use(cookieParser());
 
-app.get('/', function(req, res){
-  res.sendFile('index.html');
+app.get('/', csrfProtection, function(req, res){
+  //res.sendFile('index.html');
+  res.render('index', {csrf_token: req.csrfToken()});
 });
 
-app.post('/upload', function (req, res) {
+app.post('/upload', parseForm, csrfProtection, function (req, res) {
   upload(req, res, function(err) {
     if(err) {
       console.log("Multer error!");
       console.log(err);
       return;
     }
-
     return res.status( 200 ).send( req.file );
   });
 });
 
 // Connect to MongoDB and save the db
 MongoClient.connect(mongoUrl, function(err, db) {
-  console.log("MongoDB: connected");
-  mongoDB = db;
+  if(!err) {
+    console.log("MongoDB: connected");
+    mongoDB = db;
 
-  // Clear all previous data from DB
-  console.log("MongoDB: clear previous collections");
-  mongoDB.collection('messages').remove();
-  mongoDB.collection('users').remove();
-  mongoDB.collection('rooms').remove();
+    // Clear all previous data from DB
+    console.log("MongoDB: clear previous collections");
+    mongoDB.collection('messages').remove();
+    mongoDB.collection('users').remove();
+    mongoDB.collection('rooms').remove();
 
-  // Insert initial public room
-  console.log("MongoDB: insert initial rooms");
-  mongoDB.collection('rooms').insert(initial_rooms);
+    // Insert initial public room
+    console.log("MongoDB: insert initial rooms");
+    mongoDB.collection('rooms').insert(initial_rooms);
 
-  // Start the server
-  var port = 3000
-  http.listen(port, function(){
-    console.log('ssChat: listen on localhost:%d', port);
-  });
+    // Start the server
+    var port = 3000
+    http.listen(port, function(){
+      console.log('ssChat: listen on localhost:%d', port);
+    });
+  }
+  else {
+    console.log("MongoDB: error connecting!");
+    console.log("err.message: ", err.message);
+  }
 });
 
 function is_connected(id) {
