@@ -47,6 +47,7 @@ function set_unread(room, count) {
 }
 
 function clear_unread(room) {
+    data[room]['unread'] = 0;
     var $badge = get_room_li_by_id(room).prev();
     $($badge).hide();
 }

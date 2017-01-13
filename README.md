@@ -19,6 +19,7 @@ ssChat is a super simple web based chat application/service running on Node.js. 
 - Upload avatar images
 - Emoji support
 - uses MongoDB for managing rooms, messages and users
+- CSRF protection
 
 ## Technologies
 
