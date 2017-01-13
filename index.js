@@ -17,12 +17,13 @@ var MongoClient = require('mongodb').MongoClient;
 var mongoUrl = 'mongodb://localhost:27017/ssChat';
 var mongoDB = null;
 
-var room_id = 3;
+var room_id = 4;
 
 var initial_rooms = [ 
   {name: 'Main', public: true, id: 0}, 
   {name: 'Programming', public: true, id: 1}, 
-  {name: 'Religion', public: true, id: 2} 
+  {name: 'Religion', public: true, id: 2},
+  {name: 'Theater', public: true, id: 3} 
 ];
 
 app.set('view engine', 'ejs');
@@ -39,9 +40,9 @@ app.post('/upload', parseForm, csrfProtection, function (req, res) {
     if(err) {
       console.log("Multer error!");
       console.log(err);
-      return;
+      res.status(500);
     }
-    return res.status( 200 ).send( req.file );
+    res.status( 200 ).send( req.file );
   });
 });
 
@@ -93,7 +94,6 @@ io.on('connection', function(socket){
             }
           });
         });
-        return;
       });
     });
     //io.emit('user disconnected', user);

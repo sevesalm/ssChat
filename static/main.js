@@ -21,16 +21,18 @@ function scroll_to_bottom() {
 
 // Saves and displays a given message. Scroll to bottom if needed
 function save_message(msg, scroll) {
-    data[msg.room]['messages'].push(msg);
-    if(msg.room == my_room) {
-        display_message(msg);
-        if(scroll) {
-            scroll_to_bottom();
+    if(data[msg.room]) {
+        data[msg.room]['messages'].push(msg);
+        if(msg.room == my_room) {
+            display_message(msg);
+            if(scroll) {
+                scroll_to_bottom();
+            }
         }
-    }
-    else {
-        data[msg.room]['unread'] += 1;
-        set_unread(msg.room, data[msg.room]['unread']);
+        else {
+            data[msg.room]['unread'] += 1;
+            set_unread(msg.room, data[msg.room]['unread']);
+        }
     }
 }
 

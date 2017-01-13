@@ -3,11 +3,12 @@
   "version": "0.0.1",
   "description": "Super Simple Chat program",
   "dependencies": {
-    "express": "^4.14.0",
-    "csurf": "^1.9.0",
-    "cookie-parser": "^1.4.3",
     "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
+    "csurf": "^1.9.0",
     "ejs": "^2.5.5",
+    "express": "^4.14.0",
+    "moment": "^2.17.1",
     "mongodb": "^2.2.20",
     "multer": "^1.2.1",
     "socket.io": "^1.7.2"
