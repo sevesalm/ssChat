@@ -52,6 +52,7 @@ body {
         border-radius: 10px;
         width: 60px; }
     .panel-body #messages li .msg-content {
+      margin-right: 3%;
       margin-left: 70px; }
       .panel-body #messages li .msg-content .username {
         font-size: 1.2em;
@@ -60,7 +61,6 @@ body {
         .panel-body #messages li .msg-content .username:hover {
           cursor: pointer; }
       .panel-body #messages li .msg-content p {
-        margin-right: 80px;
         text-align: justify; }
       .panel-body #messages li .msg-content .msg-time {
         color: #aaaaaa; }
@@ -115,5 +115,7 @@ body {
     top: 20px;
     right: 25px;
     font-size: 1.5em; }
+  .panel-footer #chat-input {
+    padding-right: 50px; }
 
 /*# sourceMappingURL=style.css.map */

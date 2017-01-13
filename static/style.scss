@@ -72,6 +72,7 @@ body {
 			}
 
 			.msg-content {
+				margin-right: 3%;
 				margin-left: 70px;
 				.username {
 					font-size: 1.2em;
@@ -83,9 +84,9 @@ body {
 				}
 
 				p{
-					margin-right: 80px;
 					text-align: justify;
 				}
+
 				.msg-time {
 					color: #aaaaaa;
 				}
@@ -167,7 +168,10 @@ body {
 		top: 20px;
 		right: 25px;
 		font-size: 1.5em;
+	}
 
+	#chat-input {
+		padding-right: 50px;
 	}
 }
 

@@ -67,43 +67,45 @@
         </div><!-- /.modal -->
 
         <div class="container">
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    <div class="row">
-                        <div class="col-xs-1 pull-left">ssChat</div>
-                        <div class="col-xs-4 col-xs-offset-3"><select id="room-select" class="room-input form-control visible-xs-block"><option>Lobby</option></select></div>
-                        <div class="col-xs-1 col-xs-offset-2 glyphicon glyphicon-menu-hamburger pull-right" id="menubtn" data-toggle="modal" data-target="#profile-modal"></div>
-                    </div>
-                </div>
-                <div class="panel-body pbody">
-                    <div class="col-sm-3 rooms hidden-xs">
-                        <ul id="rooms">
-                        </ul>
-                        <button class='btn btn-default btn-block newRoomBtn' data-toggle="modal" data-target="#newRoomModal">New room...</button>
-                    </div>
-                    <div class="col-sm-9 msg-container">
-                        <ul id="messages">
-                        </ul>
-                    </div>
-                </div>
-                <div class="panel-footer">
-                    <button class="btn btn-warning btn-xs" id="btn-emoji" data-placement="top" title="Emojis">😀</button>
-                    <div id="popover_content_wrapper" style="display: none">
-                        <div>
-                            <button class="emoji">👍</button>
-                            <button class="emoji">😁</button>
-                            <button class="emoji">😀</button>
-                            <button class="emoji">😊</button>
-                            <button class="emoji">😐</button>
-                            <button class="emoji">😕</button>
-                            <button class="emoji">😞</button>
-                            <button class="emoji">😬</button>
-                            <button class="emoji">🙄</button>
-                            <button class="emoji">👎</button>
+            <div class="col-md-10 col-md-offset-1">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-1 pull-left">ssChat</div>
+                            <div class="col-xs-4 col-xs-offset-3"><select id="room-select" class="room-input form-control visible-xs-block"><option>Lobby</option></select></div>
+                            <div class="col-xs-1 col-xs-offset-2 glyphicon glyphicon-menu-hamburger pull-right" id="menubtn" data-toggle="modal" data-target="#profile-modal"></div>
                         </div>
                     </div>
-                    <textarea class="form-control" rows="3" id="chat-input"></textarea>
-                    <button class="btn btn-warning btn-md btn-block" id="btn-chat">Send</button>
+                    <div class="panel-body pbody">
+                        <div class="col-sm-3 rooms hidden-xs">
+                            <ul id="rooms">
+                            </ul>
+                            <button class='btn btn-default btn-block newRoomBtn' data-toggle="modal" data-target="#newRoomModal">New room...</button>
+                        </div>
+                        <div class="col-sm-9 msg-container">
+                            <ul id="messages">
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-warning btn-xs" id="btn-emoji" data-placement="top" title="Emojis">😀</button>
+                        <div id="popover_content_wrapper" style="display: none">
+                            <div>
+                                <button class="emoji">👍</button>
+                                <button class="emoji">😁</button>
+                                <button class="emoji">😀</button>
+                                <button class="emoji">😊</button>
+                                <button class="emoji">😐</button>
+                                <button class="emoji">😕</button>
+                                <button class="emoji">😞</button>
+                                <button class="emoji">😬</button>
+                                <button class="emoji">🙄</button>
+                                <button class="emoji">👎</button>
+                            </div>
+                        </div>
+                        <textarea class="form-control" rows="3" id="chat-input"></textarea>
+                        <button class="btn btn-warning btn-md btn-block" id="btn-chat">Send</button>
+                    </div>
                 </div>
             </div>
         </div>
