@@ -16,7 +16,10 @@ function display_message(msg) {
 }
 
 function scroll_to_bottom() {
-    $('.msg-container').animate({scrollTop: $('.msg-container').prop("scrollHeight")}, 500);
+    // Ugly, but doesn't scroll properly without setTimeout
+    setTimeout(function() {
+        $('.msg-container').animate({scrollTop: $('#messages').height()}, 500);
+    }, 0);
 }
 
 // Saves and displays a given message. Scroll to bottom if needed
@@ -92,7 +95,7 @@ function to_room(room_id) {
         data[my_room]['messages'].forEach(function (item) {
             display_message(item);
         });
-        $('.msg-container').animate({scrollTop: $('.msg-container').prop("scrollHeight")}, 500);  
+        scroll_to_bottom();
         socket.emit('join room', me, room_id);
         $('#chat-input').focus();
     }
@@ -373,7 +376,7 @@ socket.on('chat message', function(msg){
 socket.on('join room', function(user, room) {
     if(my_room === room) {
         $('#messages').append($('<li>').addClass('clearfix text-center').text(user.name + " joined"));
-        $('.msg-container').animate({scrollTop: $('.msg-container').prop("scrollHeight")}, 500);
+        scroll_to_bottom();
     }
 });
 

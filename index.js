@@ -170,8 +170,8 @@ io.on('connection', function(socket){
             // Initial username request - emit initial room list
             mongoDB.collection('rooms').find({public: true}).sort({id: 1}).toArray(function(err, rooms) {
               rooms.forEach(function(room) {
-                mongoDB.collection('messages').find({room: room.id}).limit(100).sort({time: 1}).toArray(function(err, messages) {
-                  socket.emit("new public", room, messages);
+                mongoDB.collection('messages').find({room: room.id}).sort({time: -1}).limit(100).toArray(function(err, messages) {
+                  socket.emit("new public", room, messages.reverse());
                 });
               });
             });

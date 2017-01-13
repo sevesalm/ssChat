@@ -42,10 +42,57 @@ body {
 		padding: 0;
 	}
 
-	.msg-container {
-		overflow-y: scroll;
+	.msg-container{
 		max-height: 100%;
+		overflow-y: scroll;
 	}
+
+	#messages { 
+		list-style-type: none; 
+		margin: 0; 
+		padding: 0;
+
+		li {
+			animation: fadein 0.3s;
+			@keyframes fadein {
+			    from { opacity: 0; }
+			    to   { opacity: 1; }
+			}
+
+			margin: 10px 0;
+			padding-bottom: 10px;
+			border-bottom: 1px dotted #B3A9A9;
+
+			.chat-img {
+				margin: 10px 0;
+				img {
+					border-radius: 10px;
+					width: 60px;
+				}
+			}
+
+			.msg-content {
+				margin-left: 70px;
+				.username {
+					font-size: 1.2em;
+					margin-top: 0.5em;
+					margin-bottom: 0.5em;
+					&:hover {
+						cursor: pointer;
+					}
+				}
+
+				p{
+					margin-right: 80px;
+					text-align: justify;
+				}
+				.msg-time {
+					color: #aaaaaa;
+				}
+			}
+		}
+	}
+
 	.rooms {
 		padding: 0;
 		border-right: 1px solid #ccc;
@@ -124,48 +171,4 @@ body {
 	}
 }
 
-#messages { 
-	list-style-type: none; 
-	margin: 0; 
-	padding: 0;
 
-	li {
-		animation: fadein 0.3s;
-		@keyframes fadein {
-		    from { opacity: 0; }
-		    to   { opacity: 1; }
-		}
-
-		margin: 10px 0;
-		padding-bottom: 10px;
-		border-bottom: 1px dotted #B3A9A9;
-
-		.chat-img {
-			margin: 10px 0;
-			img {
-				border-radius: 10px;
-				width: 60px;
-			}
-		}
-
-		.msg-content {
-			margin-left: 70px;
-			.username {
-				font-size: 1.2em;
-				margin-top: 0.5em;
-				margin-bottom: 0.5em;
-				&:hover {
-					cursor: pointer;
-				}
-			}
-
-			p{
-				margin-right: 80px;
-				text-align: justify;
-			}
-			.msg-time {
-				color: #aaaaaa;
-			}
-		}
-	}
-}

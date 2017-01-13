@@ -1,3 +1,5 @@
+// Quotes are taken from https://www.goodreads.com/work/quotes/1885548-hamlet
+
 var quotes = [ "Doubt thou the stars are fire; Doubt that the sun doth move; Doubt truth to be a liar; But never doubt I love.",
 "This above all: to thine own self be true, And it must follow, as the night the day, Thou canst not then be false to any man.",
 "There is nothing either good or bad, but thinking makes it so.",
@@ -33,7 +35,7 @@ var me = {name: null, avatarURL: 'https://pbs.twimg.com/profile_images/65929093/
 var my_room = null;
 
 function emit_quote() {
-	var str = quotes[Math.floor(Math.random()*quotes.length)];
+	var str = '"' + quotes[Math.floor(Math.random()*quotes.length)] + '"';
 	var message = {
 	    user:       me,
 	    message:    str,
@@ -62,7 +64,7 @@ socket.on('new public', function(room, messages) {
 		socket.emit('join room', me, 0);
 		console.log("Chatspeare: start chatting");
 		(function loop() {
-		    var rand = Math.random()*4000 + 3000;
+		    var rand = Math.random()*6000 + 7000;
 		    setTimeout(function() {
 		            emit_quote();
 		            loop();  
