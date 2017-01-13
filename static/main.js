@@ -15,21 +15,29 @@ function display_message(msg) {
     $('#messages').append($('<li>').addClass('clearfix').append($span).append($div.append($time).append($header).append($p)));
 }
 
+// True if looking at the last message
+function is_looking_latest() {
+    return ($('.msg-container').scrollTop() > $('#messages').height()-$('.msg-container').height());
+}
+
 function scroll_to_bottom() {
     // Ugly, but doesn't scroll properly without setTimeout
     setTimeout(function() {
         $('.msg-container').animate({scrollTop: $('#messages').height()}, 500);
-    }, 0);
+    }, 10);
 }
 
 // Saves and displays a given message. Scroll to bottom if needed
-function save_message(msg, scroll) {
+function save_message(msg) {
     if(data[msg.room]) {
         data[msg.room]['messages'].push(msg);
         if(msg.room == my_room) {
-            display_message(msg);
-            if(scroll) {
+            if(is_looking_latest()) {
+                display_message(msg);
                 scroll_to_bottom();
+            }
+            else {
+                display_message(msg);
             }
         }
         else {
@@ -287,7 +295,7 @@ $('#btn-chat').click(function(){
         time:       moment()
     }
     socket.emit('chat message', message );
-    save_message(message, true);
+    save_message(message);
     $('#chat-input').val('').focus();
     return false;
 });
@@ -358,7 +366,7 @@ socket.on('new public', function(room, messages){
     if(!(room.id in data)) {
         add_room(room);
         messages.forEach(function(msg) {
-            save_message(msg, false);
+            save_message(msg);
         });
     }
 });
@@ -370,14 +378,16 @@ socket.on('new private', function(room) {
 });
 
 socket.on('chat message', function(msg){
-    save_message(msg, true);
+    save_message(msg);
     snd.play();
 });
 
 socket.on('join room', function(user, room) {
     if(my_room === room) {
         $('#messages').append($('<li>').addClass('clearfix text-center').text(user.name + " joined"));
-        scroll_to_bottom();
+        if(is_looking_latest()) {
+            scroll_to_bottom();
+        }
     }
 });
 
