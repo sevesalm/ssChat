@@ -8,7 +8,8 @@ ssChat is a super simple web based chat application/service running on Node.js. 
 2. Install and start MongoDB (https://www.mongodb.com)
 3. Install dependencies: `npm install`
 4. Start the server: `node index.js`
-5. Chat!
+5. Start the bot: 'node bot.js' (Optional)
+6. Chat!
 
 ## Features
 
