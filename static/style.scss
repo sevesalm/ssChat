@@ -7,6 +7,10 @@ body {
     height: 100%;
 }
 
+.main-container, .sub-container{
+	padding: 0px !important;
+}
+
 .username-block {
 	button {
 		margin: 10px 0px 10px 10px;

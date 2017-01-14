@@ -1,6 +1,6 @@
 var socket = io();
 var me = {name: null, avatarURL: 'http://placehold.it/100/bbb/333&text=User'};
-var data = {};
+var data = [];
 var my_room = null;
 var snd = new Audio("static/blip.mp3");
 
@@ -112,6 +112,18 @@ function to_room(room_id) {
 
 // Adds a given room to room list UIs and to data structure
 function add_room(room) {
+    var new_room = {
+        messages: [],
+        unread: 0,
+        name: room.name,
+        public: room.public,
+        id: room.id
+    }
+    data[room.id] = new_room;
+    update_room_list();
+}
+
+function insert_room_elements(room) {
     var $span = $('<span>').text(room.name);
     if(!room.public) {
         $span.addClass('private');
@@ -120,13 +132,19 @@ function add_room(room) {
     $('#rooms').append($('<li>').addClass('roomName').attr('data-roomid', room.id).append($span));
     var $option = $('<option>').attr('data-roomid', room.id).text(room.name);
     $('#room-select').append($option);
-    var new_room = {
-        messages: [],
-        unread: 0,
-        name: room.name
-    }
-    data[room.id] = new_room;
-    return;
+}
+
+// Keeps rooms in order by id
+function update_room_list() {
+    $('#rooms').empty();
+    $('#room-select').empty();
+    data.forEach(function(room) {
+        insert_room_elements(room);
+        var unread_count = data[room.id]['unread'];
+        if(unread_count > 0){
+            set_unread(room.id, unread_count);
+        }
+    });
 }
 
 function delete_room(room) {
