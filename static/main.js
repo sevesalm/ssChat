@@ -24,7 +24,7 @@ function scroll_to_bottom() {
     // Ugly, but doesn't scroll properly without setTimeout
     setTimeout(function() {
         $('.msg-container').animate({scrollTop: $('#messages').height()}, 500);
-    }, 10);
+    }, 100);
 }
 
 // Saves and displays a given message. Scroll to bottom if needed
