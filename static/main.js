@@ -88,6 +88,7 @@ function to_room(room_id) {
         var $message = $('<h3>').text('Please select a room').addClass('text-center').attr('id', 'empty-room-msg');
         $('#messages').empty();
         $('.msg-container').append($message);
+        get_room_li_by_id(my_room).removeClass('active');
         my_room = null;
         $("#room-select").val('Lobby');
     }
@@ -138,6 +139,8 @@ function insert_room_elements(room) {
 function update_room_list() {
     $('#rooms').empty();
     $('#room-select').empty();
+    var $option = $('<option>').attr('data-roomid', null).text('Lobby');
+    $('#room-select').append($option);
     data.forEach(function(room) {
         insert_room_elements(room);
         var unread_count = data[room.id]['unread'];
